@@ -91,7 +91,7 @@ int main(){
     }
 
 
-
+  cout << "finished randomizer" << endl;
 
 
 
@@ -105,36 +105,47 @@ int main(){
   //s_vector = &s_member[0];//points s_vector to first value in s_member 
   bool stop = false; //boolean to keep track if the user is still using the application
   int buckets = numberofrand/3;
+  if(numberofrand%3 != 0){
+    buckets++;
+  }
   //int i = 0; //keeps track of how many students are made
   char input[30]; //char to track what the user wants to do
   student* sa;
   sa = new student[100];
   student *temp;
-  
+  student *temp2;
+
+  for (i = 0; i < 100; i++){
+    sa[i].id = -1;
+  }
+  cout << "buckets " << buckets << endl;
   for (i = 0; i < numberofrand; i++){
-    
+    cout << i << endl;
     if(i < buckets){
-      sa[i].id = i+1;
+      cout << "first" << endl;
+      sa[i].id = i;
       strcpy(sa[i].name, randfirstname[rand() % 10]);
       strcpy(sa[i].last_name, randlastname[rand()% 25]);
       sa[i].gpa = 4.0;
     }
-    else if(i > buckets && i < buckets*2){
+    else if(i >= buckets && i < buckets*2){
+      cout << "second" << endl;
       temp = new student;
-      sa[i].nextstudent = temp;
-      temp->id = i+1;
+      temp->id = i;
+      sa[Hashfunction(temp, buckets)].nextstudent = temp;
       strcpy(temp->name, randfirstname[rand() % 10]);
       strcpy(temp->last_name, randlastname[rand()% 25]);
       temp->gpa = 4.0;
 
     }
-    else if(i > buckets*2){
-      temp = new student;
-      (sa[i].nextstudent)->nextstudent = temp;
-      temp->id = i+1;
-      strcpy(temp->name, randfirstname[rand() % 10]);
-      strcpy(temp->last_name, randlastname[rand()% 25]);
-      temp->gpa = 4.0;
+    else if(i >= buckets*2){
+      cout << "third" << i << endl;
+      temp2 = new student;
+      temp2->id = i;
+      (sa[Hashfunction(temp, buckets)].nextstudent)->nextstudent = temp2;
+      strcpy(temp2->name, randfirstname[rand() % 10]);
+      strcpy(temp2->last_name, randlastname[rand()% 25]);
+      temp2->gpa = 4.0;
     }
 
 
@@ -158,44 +169,44 @@ int main(){
 
       int placement = Hashfunction(tempnew, buckets);
 
-      if(sa[placement]->id == 0){
-	sa[placement] = tempnew;
+      if(sa[placement].id == 0){
+	memcpy(&sa[placement], tempnew, sizeof(student));
       }
-      else if(sa[placement]->nextstudent == NULL){
+      else if(sa[placement].nextstudent == NULL){
 	sa[placement].nextstudent = tempnew;
       }
-      else if ((sa[placement]->nextstudent)->nextstudent == NULL){
+      else if ((sa[placement].nextstudent)->nextstudent == NULL){
 	(sa[placement].nextstudent)->nextstudent = tempnew;
       }
       else {
-	((sa[placement].nextstudent)->nextstudent)-nextstudent = tempnew;
+	((sa[placement].nextstudent)->nextstudent)->nextstudent = tempnew;
 	buckets = buckets*2;
 	needreset = true;
       }
-
+      
       if(needreset == true){
 	cout << "Need to re Hash" << endl;
-
+	
       }
       
       i++; //increase amount of students created
-      }
+    }
     /*    else if(strcmp(input,"DELETE")==0){
-      cout << "Please enter student id of student you would like to delete" << endl;
-      int temp = 0;
-      cin >> temp;
-      for (int x = 0; x<i; x++){
-	if(temp == s_member[x]->id){
+	  cout << "Please enter student id of student you would like to delete" << endl;
+	  int temp = 0;
+	  cin >> temp;
+	  for (int x = 0; x<i; x++){
+	  if(temp == s_member[x]->id){
 	  free(s_member[x]); //frees memory of the student that the user asks for
 	  s_member[x]=NULL; //makes the pointer null
-	}
-	
-	}*/
-      
+	  }
+	  
+	  }*/
+    
     //}
     else if(strcmp(input,"PRINT")==0){
       for(int x = 0;x<buckets;x++){
-	if(sa[x].id != 0){ //If the Student that the printer is on is not null
+	if(sa[x].id != -1){ //If the Student that the printer is on is not null
 	  cout << sa[x].name << " " << sa[x].last_name << ", " << sa[x].id << ", "; //print First name, last name, and ID
 	  cout.setf(ios::showpoint); //show floating zeros
 	  cout.precision(3); //sets presicion to 3
@@ -216,6 +227,7 @@ int main(){
 	      cout << ((sa[x].nextstudent)->nextstudent)->gpa << endl; //prints gpa
 	      cout.precision(100000000); // sets precision to a big number again
 	      cout.unsetf(ios::showpoint);
+	    }
 	  }
 	}
       }
