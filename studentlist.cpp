@@ -1,7 +1,7 @@
 
 
 // Dhruv Jain
-// 10/18/2020
+// 12/2/2020
 //Student List
 //Pointers and Structs
 
@@ -95,10 +95,6 @@ int main(){
 
 
 
-
-
-
-
   
   //student **s_vector; //pointer to array of pointers
   //student *s_member[50]; //array of pointers that point to students
@@ -121,6 +117,7 @@ int main(){
   cout << "buckets " << buckets << endl;
   for (i = 0; i < numberofrand; i++){
     cout << i << endl;
+    
     if(i < buckets){
       cout << "first" << endl;
       sa[i].id = i;
@@ -132,30 +129,34 @@ int main(){
       cout << "second" << endl;
       temp = new student;
       temp->id = i;
-      sa[Hashfunction(temp, buckets)].nextstudent = temp;
       strcpy(temp->name, randfirstname[rand() % 10]);
       strcpy(temp->last_name, randlastname[rand()% 25]);
       temp->gpa = 4.0;
+      int tempbucket = Hashfunction(temp, buckets);
 
+      sa[tempbucket].nextstudent = temp;
+        
     }
     else if(i >= buckets*2){
       cout << "third" << i << endl;
       temp2 = new student;
       temp2->id = i;
-      (sa[Hashfunction(temp, buckets)].nextstudent)->nextstudent = temp2;
       strcpy(temp2->name, randfirstname[rand() % 10]);
       strcpy(temp2->last_name, randlastname[rand()% 25]);
       temp2->gpa = 4.0;
-    }
+      int tempbucket = Hashfunction(temp2, buckets);
+      (sa[tempbucket].nextstudent)->nextstudent = temp2;
 
+    }
 
   }
 
   student *tempnew;
+  student *curr;
   while (stop == false){ // while loop for application
     cout << "Please enter ADD, PRINT, or DELETE. If you would like to close the application enter QUIT" << endl; 
     cin >> input;// Reads user input
-    if(strcmp(input,"ADD ")==0){
+    if(strcmp(input,"ADD")==0){
       cout << "Please enter the first name of the student" << endl;
       tempnew = new student;
       bool needreset = false;
@@ -169,7 +170,7 @@ int main(){
 
       int placement = Hashfunction(tempnew, buckets);
 
-      if(sa[placement].id == 0){
+      if(sa[placement].id == -1){
 	memcpy(&sa[placement], tempnew, sizeof(student));
       }
       else if(sa[placement].nextstudent == NULL){
@@ -185,16 +186,130 @@ int main(){
       }
       
       if(needreset == true){
+	cout << buckets <<endl;
 	cout << "Need to re Hash" << endl;
+	student* tempsa;
+	tempsa = new student[1000];
+        for (i = 0; i < 1000; i++){
+	  tempsa[i].id = -1;
+	}
+	
+	//copy over to a temp Array all the elements from the hash table
+	for(int x = 0;x<buckets/2;x++){
+	  if(sa[x].id != -1){ //If the Student that the printer is on is not null
+	    memcpy(&tempsa[sa[x].id], &sa[x], sizeof(student));
+	    //tempsa[sa[x].id].nextstudent = NULL;
+	    cout << x << endl;
+	    if(sa[x].nextstudent != NULL){
+	      memcpy(&tempsa[(sa[x].nextstudent)->id], sa[x].nextstudent, sizeof(student));
+	      
+	      //tempsa[(sa[x].nextstudent)->id].nextstudent = NULL;
+	      if((sa[x].nextstudent)->nextstudent != NULL){
+		memcpy(&tempsa[((sa[x].nextstudent)->nextstudent)->id], (sa[x].nextstudent)->nextstudent, sizeof(student));
+		if((sa[x].nextstudent)->nextstudent->nextstudent != NULL){
+		  cout << "do we come here?" << endl;
+		  memcpy(&tempsa[((sa[x].nextstudent)->nextstudent->nextstudent)->id], (sa[x].nextstudent)->nextstudent->nextstudent, sizeof(student));
+
+		  tempsa[((sa[x].nextstudent)->nextstudent->nextstudent)->id].nextstudent = NULL;
+		}
+
+		tempsa[((sa[x].nextstudent)->nextstudent)->id].nextstudent = NULL;
+	      }
+	      tempsa[(sa[x].nextstudent)->id].nextstudent = NULL;
+	    }
+	    tempsa[sa[x].id].nextstudent = NULL;
+
+	  }
+	}
+	//delete original hashtables value
+	for(int x = 0;x<buckets/2;x++){
+          if(sa[x].id != -1){ //If the Student that the printer is on is not null
+            if(sa[x].nextstudent != NULL){
+              if((sa[x].nextstudent)->nextstudent != NULL){
+		if(((sa[x].nextstudent)->nextstudent)->nextstudent != NULL){
+		  delete (((sa[x].nextstudent)->nextstudent)->nextstudent);
+		}
+		delete ((sa[x].nextstudent)->nextstudent);
+              }
+	      delete (sa[x].nextstudent);
+            }
+	    sa[x].id = -1;
+	    sa[x].nextstudent = NULL;
+          }
+        }
+
+	for (int x = 0; x<1000; x++){
+	  //cout << x << endl;
+	  if(tempsa[x].id != -1){
+
+	    cout << "id in temp sa" << endl;
+	    
+	    int placement = Hashfunction(&tempsa[x], buckets);
+	    
+	    if(sa[placement].id == -1){
+	      memcpy(&sa[placement], &tempsa[x], sizeof(student));
+	    }
+	    else if(sa[placement].nextstudent == NULL){
+
+              curr = new student;
+              memcpy(curr, &tempsa[x], sizeof(student));
+
+	      curr->nextstudent = NULL;
+	      sa[placement].nextstudent = curr;
+	    }
+	    else if ((sa[placement].nextstudent)->nextstudent == NULL){
+	      
+              curr = new student;
+              memcpy(curr, &tempsa[x], sizeof(student));
+	      curr->nextstudent = NULL;
+	      (sa[placement].nextstudent)->nextstudent = curr;
+	    }
+	    /*
+	    else {
+	      ((sa[placement].nextstudent)->nextstudent)->nextstudent = curr;
+	      buckets = buckets*2;
+	      needreset = true;
+	      } */  
+	  } //else
+	    //break;
+	}
 	
       }
       
-      i++; //increase amount of students created
+      //i++; //increase amount of students created
     }
-    /*    else if(strcmp(input,"DELETE")==0){
+    else if(strcmp(input,"DELETE")==0){
 	  cout << "Please enter student id of student you would like to delete" << endl;
-	  int temp = 0;
-	  cin >> temp;
+	  int tempid = 0;
+	  cin >> tempid;
+
+
+      int curr_b = tempid % buckets;
+      
+      if(sa[curr_b].id == tempid){
+	cout << "found the student to delete, its the head" << endl;
+	//if there is something hanging off of head, store it in a temp ptr,
+	//clean up the head
+	//copy temp ptr memory to head
+	//release temp ptr memory
+      }
+      else if(sa[curr_b].nextstudent->id == tempid){
+        cout << "found the student to delete, its one after head" << endl;
+	//check if there something after, if it is store a temp ptr to it and then delete thsi element
+	//then delete the element.
+	// then point the head to this temp ptr.
+      }
+      else if ((sa[curr_b].nextstudent)->nextstudent->id == tempid){
+        cout << "found the student to delete, its two after head" << endl;
+	delete ((sa[curr_b].nextstudent)->nextstudent);
+        (sa[curr_b].nextstudent)->nextstudent = NULL;	
+      }
+      else {
+        cout << "student not found" << endl;
+      }
+
+
+      /*
 	  for (int x = 0; x<i; x++){
 	  if(temp == s_member[x]->id){
 	  free(s_member[x]); //frees memory of the student that the user asks for
@@ -203,7 +318,7 @@ int main(){
 	  
 	  }*/
     
-    //}
+    }
     else if(strcmp(input,"PRINT")==0){
       for(int x = 0;x<buckets;x++){
 	if(sa[x].id != -1){ //If the Student that the printer is on is not null
@@ -237,6 +352,7 @@ int main(){
       //for (int x = 0;x<i; x++){ //for loop to free all Students
       //free(s_member[x]);
       //}
+      
     }
     else{
       cout << "That was not a valid command" << endl; 
@@ -245,6 +361,6 @@ int main(){
 }
 
 int Hashfunction(student * s, int numbuckets){
-  int hashvalue = (s->id) % numbuckets;
+  int hashvalue = s->id % numbuckets;
   return hashvalue;
 }
