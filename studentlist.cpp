@@ -1,5 +1,4 @@
 
-
 // Dhruv Jain
 // 12/2/2020
 //Student List
@@ -91,7 +90,7 @@ int main(){
     }
 
 
-  cout << "finished randomizer" << endl;
+  //cout << "finished randomizer" << endl;
 
 
 
@@ -116,34 +115,33 @@ int main(){
   }
   cout << "buckets " << buckets << endl;
   for (i = 0; i < numberofrand; i++){
-    cout << i << endl;
+    //cout << i << endl;
     
     if(i < buckets){
-      cout << "first" << endl;
       sa[i].id = i;
       strcpy(sa[i].name, randfirstname[rand() % 10]);
       strcpy(sa[i].last_name, randlastname[rand()% 25]);
-      sa[i].gpa = 4.0;
+      sa[i].gpa = (rand()/(double)RAND_MAX)*4;
     }
     else if(i >= buckets && i < buckets*2){
-      cout << "second" << endl;
+      //cout << "second" << endl;
       temp = new student;
       temp->id = i;
       strcpy(temp->name, randfirstname[rand() % 10]);
       strcpy(temp->last_name, randlastname[rand()% 25]);
-      temp->gpa = 4.0;
+      temp->gpa = (rand()/(double)RAND_MAX)*4;
       int tempbucket = Hashfunction(temp, buckets);
 
       sa[tempbucket].nextstudent = temp;
         
     }
     else if(i >= buckets*2){
-      cout << "third" << i << endl;
+      //cout << "third" << i << endl;
       temp2 = new student;
       temp2->id = i;
       strcpy(temp2->name, randfirstname[rand() % 10]);
       strcpy(temp2->last_name, randlastname[rand()% 25]);
-      temp2->gpa = 4.0;
+      temp2->gpa = (rand()/(double)RAND_MAX)*4;
       int tempbucket = Hashfunction(temp2, buckets);
       (sa[tempbucket].nextstudent)->nextstudent = temp2;
 
@@ -167,6 +165,7 @@ int main(){
       cin >> tempnew->id; //reads id
       cout << "Please enter the Gpa of the student" << endl;
       cin >> tempnew->gpa; //reads gpa
+      tempnew->nextstudent = NULL;
 
       int placement = Hashfunction(tempnew, buckets);
 
@@ -186,7 +185,7 @@ int main(){
       }
       
       if(needreset == true){
-	cout << buckets <<endl;
+	//cout << buckets <<endl;
 	cout << "Need to re Hash" << endl;
 	student* tempsa;
 	tempsa = new student[1000];
@@ -207,7 +206,7 @@ int main(){
 	      if((sa[x].nextstudent)->nextstudent != NULL){
 		memcpy(&tempsa[((sa[x].nextstudent)->nextstudent)->id], (sa[x].nextstudent)->nextstudent, sizeof(student));
 		if((sa[x].nextstudent)->nextstudent->nextstudent != NULL){
-		  cout << "do we come here?" << endl;
+		  //cout << "do we come here?" << endl;
 		  memcpy(&tempsa[((sa[x].nextstudent)->nextstudent->nextstudent)->id], (sa[x].nextstudent)->nextstudent->nextstudent, sizeof(student));
 
 		  tempsa[((sa[x].nextstudent)->nextstudent->nextstudent)->id].nextstudent = NULL;
@@ -242,7 +241,7 @@ int main(){
 	  //cout << x << endl;
 	  if(tempsa[x].id != -1){
 
-	    cout << "id in temp sa" << endl;
+	    //cout << "id in temp sa" << endl;
 	    
 	    int placement = Hashfunction(&tempsa[x], buckets);
 	    
@@ -288,6 +287,12 @@ int main(){
       
       if(sa[curr_b].id == tempid){
 	cout << "found the student to delete, its the head" << endl;
+	if(sa[curr_b].nextstudent!= NULL){
+	  memcpy(&sa[curr_b], sa[curr_b].nextstudent, sizeof(student));
+	}
+	else{
+	  sa[curr_b].id = -1;
+	}
 	//if there is something hanging off of head, store it in a temp ptr,
 	//clean up the head
 	//copy temp ptr memory to head
@@ -295,6 +300,18 @@ int main(){
       }
       else if(sa[curr_b].nextstudent->id == tempid){
         cout << "found the student to delete, its one after head" << endl;
+	if((sa[curr_b].nextstudent)->nextstudent!=NULL){
+	  ((sa[curr_b].nextstudent)->nextstudent)->nextstudent = NULL;
+	  student *tempdel;
+	  tempdel = (sa[curr_b].nextstudent)->nextstudent;
+	  delete (sa[curr_b].nextstudent);
+	  sa[curr_b].nextstudent = tempdel;
+	}
+	else {
+	  delete (sa[curr_b].nextstudent);
+	  sa[curr_b].nextstudent == NULL;
+	}
+	
 	//check if there something after, if it is store a temp ptr to it and then delete thsi element
 	//then delete the element.
 	// then point the head to this temp ptr.
