@@ -25,19 +25,19 @@ struct student { //student Struct with First name, Last name, ID, and Gpa
 
 };
 
-int Hashfunction(student*, int);
+int Hashfunction(student*, int); //function to figure out where to place each student
 
 int main(){
 
   srand (time(NULL));
-  cout << "How many student would you like?" << endl;
+  cout << "How many student would you like?" << endl; //asks for how many random students the user would like
   int numberofrand = 0;
   cin >> numberofrand;
-
+  //next group of lines reads in from file, and puts the lists of firstnames and lastnames into arrays of char arrays
   streampos size;
   char * memblock;
   char * pch;
-  char randfirstname[100][30];
+  char randfirstname[100][30]; //array of random firstnames
   ifstream file ("example.txt", ios::in|ios::binary|ios::ate);
   if (file.is_open())
     {
@@ -46,27 +46,22 @@ int main(){
       file.seekg (0, ios::beg);
       file.read (memblock, size);
       file.close();
-
-      //  cout << "the entire file content is in memory" << endl;
     }
   pch = strtok (memblock," ,.-");
   int i = 0;
   while (pch != NULL)
     {
-      //cout << pch << endl;
       strcpy(randfirstname[i], pch);
       pch = strtok (NULL, " ,.-");
-      //cout << firstname[i] << endl;
       i++;
     }
-  //cout << firstname[numberofstudents] << endl;
   delete[] memblock;
 
 
   streampos size1;
   char * memblock1;
   char * pch1;
-  char randlastname[100][30];
+  char randlastname[100][30]; //array of random lastnames
   ifstream file1 ("example2.txt", ios::in|ios::binary|ios::ate);
   if (file1.is_open())
     {
@@ -75,55 +70,46 @@ int main(){
       file1.seekg (0, ios::beg);
       file1.read (memblock1, size1);
       file1.close();
-
-      //      cout << "the entire file content is in memory" << endl;
     }
   pch1 = strtok (memblock1," ,.-");
   int x = 0;
   while (pch1 != NULL)
     {
-      //cout << pch << endl;
       strcpy(randlastname[x], pch1);
       pch1 = strtok (NULL, " ,.-");
-      //cout << lastname[x] << endl;
       x++;
     }
 
-
-  //cout << "finished randomizer" << endl;
-
-
-
   
-  //student **s_vector; //pointer to array of pointers
-  //student *s_member[50]; //array of pointers that point to students
-  //s_vector = &s_member[0];//points s_vector to first value in s_member 
+
   bool stop = false; //boolean to keep track if the user is still using the application
-  int buckets = numberofrand/3;
+  int buckets = numberofrand/3; //number of initial buckets is number of random students divided by 3
   if(numberofrand%3 != 0){
     buckets++;
   }
   //int i = 0; //keeps track of how many students are made
   char input[30]; //char to track what the user wants to do
   student* sa;
-  sa = new student[100];
+  sa = new student[100]; //array of head students
   student *temp;
   student *temp2;
 
-  for (i = 0; i < 100; i++){
+  for (i = 0; i < 100; i++){ //initializes all ids to -1
     sa[i].id = -1;
   }
   cout << "buckets " << buckets << endl;
+
+  
   for (i = 0; i < numberofrand; i++){
     //cout << i << endl;
     
-    if(i < buckets){
+    if(i < buckets){ //cereating and randomizing head students 
       sa[i].id = i;
       strcpy(sa[i].name, randfirstname[rand() % 10]);
       strcpy(sa[i].last_name, randlastname[rand()% 25]);
       sa[i].gpa = (rand()/(double)RAND_MAX)*4;
     }
-    else if(i >= buckets && i < buckets*2){
+    else if(i >= buckets && i < buckets*2){ //creating and randomizing 2nd students
       //cout << "second" << endl;
       temp = new student;
       temp->id = i;
@@ -135,7 +121,7 @@ int main(){
       sa[tempbucket].nextstudent = temp;
         
     }
-    else if(i >= buckets*2){
+    else if(i >= buckets*2){ //creating and randomizing 3rd students
       //cout << "third" << i << endl;
       temp2 = new student;
       temp2->id = i;
@@ -154,7 +140,7 @@ int main(){
   while (stop == false){ // while loop for application
     cout << "Please enter ADD, PRINT, or DELETE. If you would like to close the application enter QUIT" << endl; 
     cin >> input;// Reads user input
-    if(strcmp(input,"ADD")==0){
+    if(strcmp(input,"ADD")==0){ //if user enters add
       cout << "Please enter the first name of the student" << endl;
       tempnew = new student;
       bool needreset = false;
@@ -167,8 +153,10 @@ int main(){
       cin >> tempnew->gpa; //reads gpa
       tempnew->nextstudent = NULL;
 
-      int placement = Hashfunction(tempnew, buckets);
+      int placement = Hashfunction(tempnew, buckets); //runs hash function on new student to figure out where to place them
 
+
+      //THREE CONDITIONS to decide where to place depending on how many students we have in each hash
       if(sa[placement].id == -1){
 	memcpy(&sa[placement], tempnew, sizeof(student));
       }
@@ -184,7 +172,7 @@ int main(){
 	needreset = true;
       }
       
-      if(needreset == true){
+      if(needreset == true){ //if we need to reshuffle the hash table
 	//cout << buckets <<endl;
 	cout << "Need to re Hash" << endl;
 	student* tempsa;
@@ -237,11 +225,9 @@ int main(){
           }
         }
 
-	for (int x = 0; x<1000; x++){
+	for (int x = 0; x<1000; x++){ //replaces all of the students in thier new hash locations
 	  //cout << x << endl;
 	  if(tempsa[x].id != -1){
-
-	    //cout << "id in temp sa" << endl;
 	    
 	    int placement = Hashfunction(&tempsa[x], buckets);
 	    
@@ -263,16 +249,9 @@ int main(){
 	      curr->nextstudent = NULL;
 	      (sa[placement].nextstudent)->nextstudent = curr;
 	    }
-	    /*
-	    else {
-	      ((sa[placement].nextstudent)->nextstudent)->nextstudent = curr;
-	      buckets = buckets*2;
-	      needreset = true;
-	      } */  
-	  } //else
-	    //break;
+	    
+	  } 
 	}
-	
       }
       
       //i++; //increase amount of students created
@@ -326,15 +305,6 @@ int main(){
       }
 
 
-      /*
-	  for (int x = 0; x<i; x++){
-	  if(temp == s_member[x]->id){
-	  free(s_member[x]); //frees memory of the student that the user asks for
-	  s_member[x]=NULL; //makes the pointer null
-	  }
-	  
-	  }*/
-    
     }
     else if(strcmp(input,"PRINT")==0){
       for(int x = 0;x<buckets;x++){
@@ -345,14 +315,14 @@ int main(){
 	  cout << sa[x].gpa << endl; //prints gpa
 	  cout.precision(100000000); // sets precision to a big number again
 	  cout.unsetf(ios::showpoint);
-	  if(sa[x].nextstudent != NULL){
+	  if(sa[x].nextstudent != NULL){ //if there is a second student
 	    cout <<"   "<< (sa[x].nextstudent)->name << " " << (sa[x].nextstudent)->last_name << ", " << (sa[x].nextstudent)->id << ", "; //print First name, last name, and ID
 	    cout.setf(ios::showpoint); //show floating zeros
 	    cout.precision(3); //sets presicion to 3
 	    cout << (sa[x].nextstudent)->gpa << endl; //prints gpa
 	    cout.precision(100000000); // sets precision to a big number again
 	    cout.unsetf(ios::showpoint);
-	    if((sa[x].nextstudent)->nextstudent != NULL){
+	    if((sa[x].nextstudent)->nextstudent != NULL){ //if there is a third student
 	      cout << "      " << ((sa[x].nextstudent)->nextstudent)->name << " " << ((sa[x].nextstudent)->nextstudent)->last_name << ", " << ((sa[x].nextstudent)->nextstudent)->id << ", "; //print First name, last name, and ID
 	      cout.setf(ios::showpoint); //show floating zeros
 	      cout.precision(3); //sets presicion to 3
@@ -365,10 +335,7 @@ int main(){
       }
     }
     else if(strcmp(input,"QUIT")==0){
-      stop = true; //stops while loop
-      //for (int x = 0;x<i; x++){ //for loop to free all Students
-      //free(s_member[x]);
-      //}
+      stop = true;
       
     }
     else{
@@ -377,7 +344,7 @@ int main(){
   }
 }
 
-int Hashfunction(student * s, int numbuckets){
+int Hashfunction(student * s, int numbuckets){ //hash function that divides the student by numbuckets and gives placement
   int hashvalue = s->id % numbuckets;
   return hashvalue;
 }
